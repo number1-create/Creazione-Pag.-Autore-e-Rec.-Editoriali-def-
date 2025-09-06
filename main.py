@@ -1,9 +1,10 @@
 import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles # <-- AGGIUNTA
 from pydantic import BaseModel
 from openai import AzureOpenAI
 
+# ... (tutto il codice per AzureOpenAI e la classe GenerationRequest rimane uguale) ...
 client = AzureOpenAI(
     api_key=os.getenv("AZURE_API_KEY"),
     api_version="2024-02-01",
@@ -11,14 +12,6 @@ client = AzureOpenAI(
 )
 
 app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 class GenerationRequest(BaseModel):
     prompt: str
@@ -42,3 +35,6 @@ def generate_content(request: GenerationRequest):
     )
     generated_text = response.choices[0].message.content
     return {"output": generated_text.strip()}
+
+# Questa riga dice a FastAPI di servire l'app React costruita
+app.mount("/", StaticFiles(directory="frontend/build", html=True), name="static") # <-- AGGIUNTA
