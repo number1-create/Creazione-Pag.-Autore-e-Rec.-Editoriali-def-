@@ -31,8 +31,7 @@ def generate_content(request: GenerationRequest):
         # --- INTEGRAZIONE DEL TUO PROMPT ---
         "Based on the target buyer persona and their needs, build a description that instills trust and credibility. "
         "It must represent the author or publishing house as the one who produces the resource the buyer needs to solve their problem. "
-        "Usa SEMPRE E SOLTANTO il seguente nome per l'autore: '{request.pen_name}'."
-        "Usa SEMPRE E SOLTANTO il seguente titolo per la risorsa/libro: '{request.resource_title}'."
+        "**Author and Title:** YOU MUST use the exact Pen Name ('{request.pen_name}') and Resource Title ('{request.resource_title}') provided above. Do not alter them."
         "Non inventare o usare altri nomi o titoli."
         # --- FINE INTEGRAZIONE ---
         "Structure the output into two distinct sections: '## Description' and '## Editorial Reviews' (provide 3 separate reviews). "
