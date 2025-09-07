@@ -10,6 +10,9 @@ function App() {
   const [esempio, setEsempio] = useState('');
   const [output, setOutput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [penName, setPenName] = useState('');
+  const [resourceTitle, setResourceTitle] = useState('');
+  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -26,6 +29,8 @@ function App() {
           prompt: prompt,
           dati_input: dati,
           esempio_output: esempio,
+          pen_name: penName,            
+          resource_title: resourceTitle,
         }),
       });
 
@@ -51,7 +56,20 @@ function App() {
           <option value="penName">Pen Name Description + Reviews</option>
           <option value="publisher">Publishing House Description + Reviews</option>
         </select>
-        
+        <input 
+          type="text" 
+          value={penName} 
+          onChange={(e) => setPenName(e.target.value)} 
+          placeholder="Inserisci qui il Pen Name (es. Dr. Jane Smith)" 
+          required 
+        />
+        <input 
+          type="text" 
+          value={resourceTitle} 
+          onChange={(e) => setResourceTitle(e.target.value)} 
+          placeholder="Inserisci qui il Titolo della Risorsa (es. Med-Surg Mastery)" 
+          required 
+        />
         <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Prompt aggiuntivo (opzionale)" />
         <textarea value={dati} onChange={(e) => setDati(e.target.value)} placeholder="Dati su cui costruire (es. nome autore, genere libri, valori...)" required />
         <textarea value={esempio} onChange={(e) => setEsempio(e.target.value)} placeholder="Esempio di output a cui ispirarsi" required />
