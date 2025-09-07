@@ -18,21 +18,25 @@ class GenerationRequest(BaseModel):
     prompt: str
     dati_input: str
     esempio_output: str
+    pen_name: str
+    resource_title: str 
 
 @app.post("/api/generate")
 def generate_content(request: GenerationRequest):
     # Definiamo le regole di base
-    base_rules = (
-        "You are an expert marketing copywriter for the publishing industry. "
-        "Your task is to generate compelling descriptions and editorial reviews. "
-        "The language must be American English, with a persuasive and professional tone. "
-        # --- INTEGRAZIONE DEL TUO PROMPT ---
-        "Based on the target buyer persona and their needs, build a description that instills trust and credibility. "
-        "It must represent the author or publishing house as the one who produces the resource the buyer needs to solve their problem. "
-        # --- FINE INTEGRAZIONE ---
-        "Structure the output into two distinct sections: '## Description' and '## Editorial Reviews' (provide 3 separate reviews). "
-        "Strictly adhere to the style, length, and voice of the provided example."
-    )
+    base_rules = f"""
+You are an expert marketing copywriter for the publishing industry.
+Your task is to generate compelling descriptions and editorial reviews.
+The language must be American English, with a persuasive and professional tone.
+Based on the target buyer persona and their needs, build a description that instills trust and credibility.
+It must represent the author or publishing house as the one who produces the resource the buyer needs to solve their problem.
+
+**Author and Title (HARD RULE):** Use EXACTLY this Pen Name: "{request.pen_name}" and this Resource Title: "{request.resource_title}".
+Do not alter, translate, reorder, abbreviate, or invent other names or titles.
+
+Structure the output into two distinct sections: '## Description' and '## Editorial Reviews' (provide 3 separate reviews).
+Strictly adhere to the style, length, and voice of the provided example.
+"""
 
     # Scegliamo il target in base alla scelta dell'utente
     if request.content_type == "penName":
