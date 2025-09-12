@@ -2,36 +2,56 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  // NUOVO: Stato per memorizzare la scelta del tipo di contenuto
-  const [contentType, setContentType] = useState('penName'); // 'penName' è il valore di default
+  // --- STATI PER I CAMPI DEL FORM ---
+  const [authorOrPublisherName, setAuthorOrPublisherName] = useState('');
+  const [entityType, setEntityType] = useState('Pen Name'); // Valore di default
+  const [productTitle, setProductTitle] = useState('');
+  const [featureList, setFeatureList] = useState('');
+  const [buyerPersonaSummary, setBuyerPersonaSummary] = useState('');
+  const [marketNiche, setMarketNiche] = useState('');
+  const [esempioOutputRecensioni, setEsempioOutputRecensioni] = useState('');
 
-  const [prompt, setPrompt] = useState('');
-  const [dati, setDati] = useState('');
-  const [esempio, setEsempio] = useState('');
+  // --- STATI PER LA GESTIONE DELL'OUTPUT E DEL CARICAMENTO ---
   const [output, setOutput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [penName, setPenName] = useState('');
-  const [resourceTitle, setResourceTitle] = useState('');
-  
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  // URL del backend. Assicurati che sia corretto.
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+  /**
+   * Funzione unica per gestire la generazione, che accetta il tipo di contenuto da creare.
+   * @param {'reviews' | 'about_page'} generationType - Il tipo di contenuto da generare.
+   */
+  const handleSubmit = async (generationType) => {
+    // Validazione semplice per assicurarsi che i campi principali non siano vuoti
+    if (!authorOrPublisherName || !productTitle || !buyerPersonaSummary || !featureList) {
+      setError('Per favore, compila tutti i campi richiesti.');
+      return;
+    }
+
     setIsLoading(true);
     setOutput('');
+    setError('');
+
+    // Prepara il corpo della richiesta secondo il modello Pydantic del backend
+    const requestBody = {
+      generation_type: generationType,
+      author_or_publisher_name: authorOrPublisherName,
+      entity_type: entityType,
+      product_title: productTitle,
+      feature_list: featureList,
+      buyer_persona_summary: buyerPersonaSummary,
+      market_niche: marketNiche,
+      // Invia l'esempio solo se stiamo generando recensioni
+      esempio_output_recensioni: generationType === 'reviews' ? esempioOutputRecensioni : '',
+    };
 
     try {
-      const response = await fetch('/api/generate', { // Rimuoviamo l'URL completo, Render lo gestirà
+      const response = await fetch(`${apiUrl}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // NUOVO: Inviamo anche il tipo di contenuto
-          content_type: contentType,
-          prompt: prompt,
-          dati_input: dati,
-          esempio_output: esempio,
-          pen_name: penName,            
-          resource_title: resourceTitle,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -40,47 +60,79 @@ function App() {
 
       const data = await response.json();
       setOutput(data.output);
-    } catch (error) {
-      setOutput(`Si è verificato un errore: ${error.message}`);
+    } catch (err) {
+      setError(`Si è verificato un errore: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="App">
-      <h1>Generatore di Contenuti Editoriali</h1>
-      <form onSubmit={handleSubmit}>
-        {/* NUOVO: Menu a tendina (select) */}
-        <select value={contentType} onChange={(e) => setContentType(e.target.value)} required>
-          <option value="penName">Pen Name Description + Reviews</option>
-          <option value="publisher">Publishing House Description + Reviews</option>
-        </select>
-        <input 
-          type="text" 
-          value={penName} 
-          onChange={(e) => setPenName(e.target.value)} 
-          placeholder="Inserisci qui il Pen Name (es. Dr. Jane Smith)" 
-          required 
-        />
-        <input 
-          type="text" 
-          value={resourceTitle} 
-          onChange={(e) => setResourceTitle(e.target.value)} 
-          placeholder="Inserisci qui il Titolo della Risorsa (es. Med-Surg Mastery)" 
-          required 
-        />
-        <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Prompt aggiuntivo (opzionale)" />
-        <textarea value={dati} onChange={(e) => setDati(e.target.value)} placeholder="Dati su cui costruire (es. nome autore, genere libri, valori...)" required />
-        <textarea value={esempio} onChange={(e) => setEsempio(e.target.value)} placeholder="Esempio di output a cui ispirarsi" required />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Generazione...' : 'Genera'}
-        </button>
-      </form>
-      <div className="output-area">
-        <h2>Output Generato</h2>
-        <pre>{output}</pre>
-      </div>
+    <div className="container">
+      <header>
+        <h1>Generatore di Contenuti Editoriali</h1>
+        <p>Inserisci i dati del prodotto una sola volta e genera ciò che ti serve.</p>
+      </header>
+
+      <main>
+        <div className="form-container">
+          <h2>Dati del Prodotto</h2>
+          
+          <div className="form-group">
+            <label>Nome Autore / Casa Editrice</label>
+            <input type="text" value={authorOrPublisherName} onChange={(e) => setAuthorOrPublisherName(e.target.value)} placeholder="Es. John Doe o Edizioni Futura" />
+          </div>
+
+          <div className="form-group">
+            <label>Tipo</label>
+            <select value={entityType} onChange={(e) => setEntityType(e.target.value)}>
+              <option value="Pen Name">Pen Name</option>
+              <option value="Casa Editrice">Casa Editrice</option>
+            </select>
+          </div>
+          
+          <div className="form-group">
+            <label>Titolo del Prodotto</label>
+            <input type="text" value={productTitle} onChange={(e) => setProductTitle(e.target.value)} placeholder="Es. Guida Completa a..." />
+          </div>
+
+          <div className="form-group">
+            <label>Nicchia di Mercato</label>
+            <input type="text" value={marketNiche} onChange={(e) => setMarketNiche(e.target.value)} placeholder="Es. Preparazione test scolastici scuola primaria" />
+          </div>
+
+          <div className="form-group">
+            <label>Caratteristiche e Benefici Chiave</label>
+            <textarea value={featureList} onChange={(e) => setFeatureList(e.target.value)} placeholder="Elenca le caratteristiche principali e perché sono utili per il cliente.&#10;Es:&#10;- 3 test completi: Simula l'esperienza reale dell'esame.&#10;- Lezioni video online: Permette allo studente di ripassare in autonomia." />
+          </div>
+          
+          <div className="form-group">
+            <label>Descrizione della Buyer Persona</label>
+            <textarea value={buyerPersonaSummary} onChange={(e) => setBuyerPersonaSummary(e.target.value)} placeholder="Descrivi il tuo cliente ideale.&#10;Es: Genitore impegnato, cerca materiali affidabili per aiutare il figlio a superare l'ansia da esame. Ha poco tempo e vuole strumenti pratici." />
+          </div>
+
+          <div className="form-group">
+            <label>Esempio Output per Recensioni (Opzionale)</label>
+            <textarea value={esempioOutputRecensioni} onChange={(e) => setEsempioOutputRecensioni(e.target.value)} placeholder="Incolla qui un esempio di recensioni per guidare lo stile dell'AI." />
+          </div>
+
+          <div className="button-group">
+            <button onClick={() => handleSubmit('reviews')} disabled={isLoading}>
+              {isLoading ? 'Generando...' : 'Genera Recensioni Editoriali'}
+            </button>
+            <button onClick={() => handleSubmit('about_page')} disabled={isLoading}>
+              {isLoading ? 'Generando...' : 'Genera Pagina Autore/Editore'}
+            </button>
+          </div>
+        </div>
+
+        <div className="output-container">
+          <h2>Output Generato</h2>
+          {isLoading && <p className="loading-message">Generazione in corso...</p>}
+          {error && <p className="error-message">{error}</p>}
+          <pre>{output}</pre>
+        </div>
+      </main>
     </div>
   );
 }
