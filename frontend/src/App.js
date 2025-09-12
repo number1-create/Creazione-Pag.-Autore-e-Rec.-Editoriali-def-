@@ -43,7 +43,8 @@ function App() {
       feature_list: featureList,
       buyer_persona_summary: buyerPersonaSummary,
       market_niche: marketNiche,
-      // Invia l'esempio solo se stiamo generando recensioni
+      // AGGIUNGI QUESTA RIGA
+      name_style: "Nomi americani bilanciati per genere; affiliazioni inventate ma credibili",
       esempio_output_recensioni: generationType === 'reviews' ? esempioOutputRecensioni : '',
     };
 
@@ -138,3 +139,4 @@ function App() {
 }
 
 export default App;
+
