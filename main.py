@@ -120,12 +120,30 @@ def call_openai_api(full_prompt: str) -> str:
     )
     return response.choices[0].message.content.strip()
 
+# Questo serve per servire i file statici del frontend (CSS, JS, immagini)
+app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
+
+# Questo è un "catch-all" che serve l'index.html per qualsiasi altra rotta.
+# È FONDAMENTALE per far funzionare il routing del frontend.
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    return FileResponse("frontend/build/index.html")
 # --- UNICO ENDPOINT API ---
 
 @app.post("/api/generate")
 def generate_content(request: GenerationRequest):
     full_prompt = ""
-    
+
+# Questo serve per servire i file statici del frontend (CSS, JS, immagini)
+app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
+
+# Questo è un "catch-all" che serve l'index.html per qualsiasi altra rotta.
+# È FONDAMENTALE per far funzionare il routing del frontend.
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    return FileResponse("frontend/build/index.html")
+
+
     # Usiamo un if per scegliere quale prompt costruire
     if request.generation_type == GenerationType.RECENSIONI:
         prompt_completo = PROMPT_RECENSIONI_EDITORIALI.format(
@@ -159,4 +177,5 @@ def generate_content(request: GenerationRequest):
 
     generated_text = call_openai_api(full_prompt)
     return {"output": generated_text}
+
 
