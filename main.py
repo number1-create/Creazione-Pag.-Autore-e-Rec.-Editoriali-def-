@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from openai import AzureOpenAI
 from enum import Enum
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # --- CONFIGURAZIONE CLIENT AZURE OPENAI ---
 client = AzureOpenAI(
@@ -157,3 +159,4 @@ def generate_content(request: GenerationRequest):
 
     generated_text = call_openai_api(full_prompt)
     return {"output": generated_text}
+
