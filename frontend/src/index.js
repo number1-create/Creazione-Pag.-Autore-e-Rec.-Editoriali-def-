@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // <-- Ecco la correzione
+import ReactDOM from 'client';
 import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
