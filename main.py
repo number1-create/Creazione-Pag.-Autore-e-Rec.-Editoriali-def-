@@ -139,11 +139,13 @@ app.mount("/static", StaticFiles(directory="frontend/build/static"), name="stati
 
 # Questo è un "catch-all" che serve l'index.html per qualsiasi altra rotta.
 # È FONDAMENTALE per far funzionare il routing del frontend.
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    return FileResponse("frontend/build/index.html")
+# --- INCOLLA DA QUI ---
 
-
+# --- UNICO ENDPOINT API ---
+@app.post("/api/generate")
+def generate_content(request: GenerationRequest):
+    full_prompt = ""
+    
     # Usiamo un if per scegliere quale prompt costruire
     if request.generation_type == GenerationType.RECENSIONI:
         prompt_completo = PROMPT_RECENSIONI_EDITORIALI.format(
@@ -171,11 +173,26 @@ async def serve_react_app(full_path: str):
             LISTA_FUNZIONALITA=request.feature_list
         )
 
-    else:
-        # Gestione di un caso non previsto
+    # Controlla se il prompt è stato creato correttamente
+    if not full_prompt:
         return {"error": "Tipo di generazione non valido"}
 
+    # Chiama l'API di OpenAI e restituisce il risultato
     generated_text = call_openai_api(full_prompt)
     return {"output": generated_text}
+
+
+# --- BLOCCO PER SERVIRE IL FRONTEND (DEVE STARE DOPO L'API) ---
+
+# 1. Monta la cartella 'static'
+app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
+
+# 2. Rotta "catch-all" per l'app React
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    return FileResponse("frontend/build/index.html")
+
+# --- FINO A QUI ---
+
 
 
